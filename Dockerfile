@@ -3,8 +3,12 @@
 # =========================
 FROM node:20-alpine AS frontend-build
 WORKDIR /app/frontend
+
+# Install dependencies
 COPY frontend/package*.json ./
 RUN npm install
+
+# Copy source and build
 COPY frontend/ ./
 RUN npm run build
 
@@ -13,8 +17,12 @@ RUN npm run build
 # =========================
 FROM python:3.11-slim AS backend-build
 WORKDIR /app/backend
+
+# Copy requirements and install
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy backend source
 COPY backend/ ./
 
 # =========================
@@ -23,23 +31,23 @@ COPY backend/ ./
 FROM python:3.11-slim
 WORKDIR /app/backend
 
-# Install Python dependencies in final image
+# Install Python dependencies again in final stage (ensures uvicorn exists)
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend source
+# Copy backend code
 COPY --from=backend-build /app/backend /app/backend
 
-# Copy frontend build
+# Copy frontend build output
 COPY --from=frontend-build /app/frontend/.next /app/frontend/.next
 COPY --from=frontend-build /app/frontend/public /app/frontend/public
 
 # Copy SQLite database
 COPY backend/race-to-space.db /app/backend/race-to-space.db
 
-# Expose port from Render
+# Expose Render PORT
 ENV PORT=10000
 EXPOSE $PORT
 
-# Run FastAPI
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
+# Run FastAPI via uvicorn
+ENTRYPOINT ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
