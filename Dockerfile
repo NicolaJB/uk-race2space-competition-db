@@ -1,61 +1,49 @@
 # =========================
-# Stage 1: Build Frontend
+# Stage 1: Frontend Build
 # =========================
 FROM node:20-alpine AS frontend-build
-
-# Set working directory
 WORKDIR /app/frontend
 
-# Copy frontend package files and install dependencies
+# Copy only package files and install dependencies
 COPY frontend/package*.json ./
 RUN npm install
 
-# Copy all frontend source code and build
+# Copy full frontend source and build
 COPY frontend/ ./
 RUN npm run build
 
 # =========================
-# Stage 2: Build Backend
+# Stage 2: Backend Build
 # =========================
 FROM python:3.11-slim AS backend-build
-
-# Set working directory
 WORKDIR /app/backend
 
-# Copy backend requirements and install
+# Copy requirements and install backend dependencies
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend source code
+# Copy backend source
 COPY backend/ ./
 
 # =========================
-# Stage 3: Final Image (Frontend + Backend + DB)
+# Stage 3: Final Image
 # =========================
 FROM python:3.11-slim
+WORKDIR /app/backend
 
-# Set working directory
-WORKDIR /app
-
-# Copy backend
+# Copy backend from build stage
 COPY --from=backend-build /app/backend /app/backend
 
-# Copy frontend build output
+# Copy frontend build (for static file serving)
 COPY --from=frontend-build /app/frontend/.next /app/frontend/.next
 COPY --from=frontend-build /app/frontend/public /app/frontend/public
-COPY --from=frontend-build /app/frontend/package*.json /app/frontend/
 
 # Copy SQLite database
 COPY backend/race-to-space.db /app/backend/race-to-space.db
 
-# Install Uvicorn and FastAPI (runtime only)
-RUN pip install --no-cache-dir uvicorn fastapi
-
-# Set environment variables
+# Expose Azure PORT
 ENV PORT=8000
+EXPOSE $PORT
 
-# Expose backend port
-EXPOSE 8000
-
-# Run FastAPI backend when container starts
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to run FastAPI backend
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port $PORT"]

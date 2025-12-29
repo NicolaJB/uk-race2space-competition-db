@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.api.query import router as query_router
 from app.api.team_insights import router as team_insights_router
 import sqlite3
@@ -8,18 +9,20 @@ from typing import Dict
 # Create FastAPI app
 app = FastAPI(title="R2S Competition DB")
 
-# Include routers
+# Serve frontend static files (Next.js build)
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+
+# Include backend API routers
 app.include_router(query_router, prefix="/query")
 app.include_router(team_insights_router, prefix="/team-insights")
 
-# Enable CORS for local development
+# Enable CORS (for development or external frontend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change in production to your frontend URL
+    allow_origins=["*"],  # Change to frontend URL in production
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 # /query endpoint
 @app.post("/query")
@@ -51,22 +54,15 @@ async def query_db(item: Dict):
     ]
     return {"results": results}
 
-
 # /team-insights endpoint
 @app.post("/team-insights")
 async def team_insights(item: Dict):
-    """
-    Return team insights formatted for frontend table and chart.
-    Expects JSON body: {"team_name": "Bath"}
-    """
     team_name = item.get("team_name")
     if not team_name:
         return {"error": "Missing 'team_name' in request"}
 
     conn = sqlite3.connect("race-to-space.db")
     cursor = conn.cursor()
-
-    # Aggregate scores in case multiple entries exist per team
     cursor.execute("""
         SELECT t.team_name, e.engine_type,
                SUM(hr.total_score) AS hybrids_score,
@@ -84,11 +80,8 @@ async def team_insights(item: Dict):
     if not row:
         return {"error": "Team not found"}
 
-    # Safely handle NULL values
     hybrids_score = row[2] if row[2] is not None else 0
     biprops_score = row[3] if row[3] is not None else 0
-
-    # Example AI/ML metric: average of Hybrids and Biprops scores
     ai_ml_score = (hybrids_score + biprops_score) / 2
 
     return {
