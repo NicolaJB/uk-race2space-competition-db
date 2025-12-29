@@ -7,30 +7,30 @@ import sqlite3
 from typing import Dict
 import os
 
-# Create FastAPI app
 app = FastAPI(title="R2S Competition DB")
 
-# Serve frontend build from Docker image
-# In Dockerfile, we copy the frontend build to /app/frontend
-frontend_path = os.path.join(os.path.dirname(__file__), "../../frontend/public")
+# Serve Next.js build for root
+frontend_path = os.path.join(os.path.dirname(__file__), "../../frontend/.next")
+public_path = os.path.join(os.path.dirname(__file__), "../../frontend/public")
+
 if os.path.exists(frontend_path):
     app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
+elif os.path.exists(public_path):
+    app.mount("/", StaticFiles(directory=public_path, html=True), name="frontend")
 else:
     print("WARNING: Frontend build not found. Static files won't be served.")
 
-# Include backend API routers
 app.include_router(query_router, prefix="/query")
 app.include_router(team_insights_router, prefix="/team-insights")
 
-# Enable CORS (for development or external frontend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change to your frontend URL in production
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Your existing /query endpoint
+# /query endpoint
 @app.post("/query")
 async def query_db(item: Dict):
     query_text = item.get("query", "")
@@ -60,7 +60,7 @@ async def query_db(item: Dict):
     ]
     return {"results": results}
 
-# Your existing /team-insights endpoint
+# /team-insights endpoint
 @app.post("/team-insights")
 async def team_insights(item: Dict):
     team_name = item.get("team_name")
