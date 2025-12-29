@@ -17,7 +17,7 @@ This project provides a full-stack web application to explore UK annual Race2Spa
 - Nottingham
 - Manchester
 - Surrey
-- Bath-
+- Bath
 - USW
 - Durham
 - QUB 
