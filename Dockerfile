@@ -4,11 +4,11 @@
 FROM node:20-alpine AS frontend-build
 WORKDIR /app/frontend
 
-# Install dependencies
+# Copy only package files and install dependencies
 COPY frontend/package*.json ./
 RUN npm install
 
-# Copy source and build
+# Copy full frontend source and build
 COPY frontend/ ./
 RUN npm run build
 
@@ -18,27 +18,11 @@ RUN npm run build
 FROM python:3.11-slim AS backend-build
 WORKDIR /app/backend
 
-# =========================
-# Stage 1: Frontend Build
-# =========================
-FROM node:20-alpine AS frontend-build
-WORKDIR /app/frontend
-
-COPY frontend/package*.json ./
-RUN npm install
-
-COPY frontend/ ./
-RUN npm run build
-
-# =========================
-# Stage 2: Backend Build
-# =========================
-FROM python:3.11-slim AS backend-build
-WORKDIR /app/backend
-
+# Copy requirements and install backend dependencies
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy backend source
 COPY backend/ ./
 
 # =========================
@@ -47,10 +31,10 @@ COPY backend/ ./
 FROM python:3.11-slim
 WORKDIR /app/backend
 
-# Copy backend
+# Copy backend from build stage
 COPY --from=backend-build /app/backend /app/backend
 
-# Copy frontend build (Next.js static files)
+# Copy frontend build (for static file serving)
 COPY --from=frontend-build /app/frontend/.next /app/frontend/.next
 COPY --from=frontend-build /app/frontend/public /app/frontend/public
 
@@ -61,5 +45,6 @@ COPY backend/race-to-space.db /app/backend/race-to-space.db
 ENV PORT=10000
 EXPOSE $PORT
 
-# Start FastAPI using Render's assigned port
+# Start FastAPI with uvicorn
+RUN pip install --no-cache-dir uvicorn
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port $PORT"]
