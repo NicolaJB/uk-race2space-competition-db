@@ -46,7 +46,7 @@ COPY --from=frontend-build /app/frontend/public /app/frontend/public
 COPY --from=frontend-build /app/frontend/package*.json /app/frontend/
 
 # Copy SQLite database
-COPY backend/race-to-space.db /app/backend/race-to-space.db
+COPY race-to-space.db /app/race-to-space.db
 
 # Install Uvicorn and FastAPI (runtime only)
 RUN pip install --no-cache-dir uvicorn fastapi
