@@ -53,7 +53,7 @@ export default function TeamInsights({ teamName }: TeamInsightsProps) {
       setError("");
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/team-insights/", {
+        const res = await fetch("http://127.0.0.1:8000/team-insights", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ team_name: teamName }),
@@ -101,7 +101,7 @@ export default function TeamInsights({ teamName }: TeamInsightsProps) {
       {loading && <p>Loading team insights...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* ================= TABLE ================= */}
+      {/* TABLE */}
       <table
         style={{
           width: "100%",
@@ -134,7 +134,7 @@ export default function TeamInsights({ teamName }: TeamInsightsProps) {
         </tbody>
       </table>
 
-      {/* ================= CHART ================= */}
+      {/* CHART */}
       {teamData.insights.length > 0 && (
         <div
           style={{
@@ -157,7 +157,7 @@ export default function TeamInsights({ teamName }: TeamInsightsProps) {
         </div>
       )}
 
-      {/* ================= TEAM DETAILS ================= */}
+      {/* TEAM DETAILS */}
       <div
         style={{
           marginTop: "2rem",
@@ -183,31 +183,33 @@ export default function TeamInsights({ teamName }: TeamInsightsProps) {
         </p>
       </div>
 
-      {/* ================= CHART EXPLANATION ================= */}
-        <p
-          style={{
-            marginTop: "1rem",
-            maxWidth: "800px",
-            marginLeft: "auto",
-            marginRight: "auto",
-            textAlign: "center", // centers only the title
-          }}
-        >
-          <strong>Predicted Total Performance Scores (All Teams)</strong>
-        </p>
-        <p
-          style={{
-            marginTop: "0.5rem",
-            maxWidth: "800px",
-            marginLeft: "auto",
-            marginRight: "auto",
-          }}
-        >
-          Team currently selected is shown in red. Score predictions use a linear regression model based on component metrics: <em>innovation scores, testing, documentation, and presentation (both Hybrids and Biprops)</em>.
-        </p>
+      {/* ================= ALL-TEAMS CHART EXPLANATION ================= */}
+      <p
+        style={{
+          marginTop: "1rem",
+          maxWidth: "800px",
+          marginLeft: "auto",
+          marginRight: "auto",
+          textAlign: "center",
+        }}
+      >
+        <strong>Predicted Total Performance Scores (All Teams)</strong>
+      </p>
+      <p
+        style={{
+          marginTop: "0.5rem",
+          maxWidth: "800px",
+          marginLeft: "auto",
+          marginRight: "auto",
+        }}
+      >
+        Team currently selected is shown in red. Score predictions use a linear regression model based on component metrics:{" "}
+        <em>innovation scores, testing, documentation, and presentation (both Hybrids and Biprops)</em>.
+      </p>
 
+      {/* ================= TEAM-SPECIFIC CHART EXPLANATION ================= */}
 
-      {/* ================= OPTIONAL BASE64 CHART ================= */}
+      {/* BASE64 CHART */}
       {teamData.chart && (
         <div
           style={{

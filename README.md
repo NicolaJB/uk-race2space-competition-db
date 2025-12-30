@@ -120,7 +120,6 @@ For portfolio demonstration purposes, the frontend and backend are combined into
 R2S-CompetitionDB/
 │
 ├─ Dockerfile                 # Final Dockerfile (builds frontend & backend in one container)
-├─ requirements.txt           # Backend dependencies
 ├─ race-to-space.db           # SQLite database
 ├─ README.md
 │
@@ -158,6 +157,7 @@ R2S-CompetitionDB/
 │  └─ postcss.config.mjs
 │
 └─ .gitignore
+
 ```
 ### Technologies Used
 - Frontend: React, Next.js, Recharts
