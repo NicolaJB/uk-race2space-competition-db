@@ -111,6 +111,10 @@ A lightweight linear regression model predicts total performance scores. The mod
 
 The output chart displays predicted total performance scores for all teams based on component metrics.
 
+## Full-Screen Interface Preview
+
+![Race2Space Competition App Interface](R2SCompApp-Interface-FullScreen.png)
+
 ### Deployment
 This project can be containerised using Docker and deployed to Azure App Service.
 For portfolio demonstration purposes, the frontend and backend are combined into a single container (required for Azure student account limits).
